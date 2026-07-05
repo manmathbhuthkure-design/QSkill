@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecurePass - Password Generator</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f172a,#1e293b,#312e81);
+    overflow:hidden;
+}
+
+.bg-circle{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(100px);
+}
+
+.circle1{
+    width:300px;
+    height:300px;
+    background:#8b5cf6;
+    top:-50px;
+    left:-50px;
+}
+
+.circle2{
+    width:350px;
+    height:350px;
+    background:#06b6d4;
+    bottom:-80px;
+    right:-80px;
+}
+
+.card{
+    width:420px;
+    padding:30px;
+    border-radius:25px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.15);
+    box-shadow:0 25px 45px rgba(0,0,0,.35);
+    transform:perspective(1000px) rotateX(5deg);
+}
+
+h1{
+    color:#fff;
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.output{
+    display:flex;
+    gap:10px;
+}
+
+.output input{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:rgba(255,255,255,.12);
+    color:white;
+    font-size:15px;
+    outline:none;
+}
+
+.output button{
+    width:60px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.settings{
+    margin-top:20px;
+    color:white;
+}
+
+.setting{
+    display:flex;
+    justify-content:space-between;
+    margin:12px 0;
+}
+
+.range-value{
+    text-align:center;
+    margin-top:8px;
+    color:#67e8f9;
+    font-weight:bold;
+}
+
+input[type="range"]{
+    width:100%;
+}
+
+.generate{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    border:none;
+    border-radius:15px;
+    background:linear-gradient(135deg,#8b5cf6,#06b6d4);
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.generate:hover{
+    transform:translateY(-3px);
+}
+
+.strength{
+    margin-top:20px;
+}
+
+.bar{
+    height:10px;
+    border-radius:20px;
+    background:#334155;
+    overflow:hidden;
+}
+
+.fill{
+    height:100%;
+    width:0%;
+    transition:.4s;
+}
+
+.strength-text{
+    margin-top:8px;
+    color:white;
+    text-align:center;
+}
+</style>
+</head>
+<body>
+
+<div class="bg-circle circle1"></div>
+<div class="bg-circle circle2"></div>
+
+<div class="card">
+    <h1>🔐 SecurePass</h1>
+
+    <div class="output">
+        <input type="text" id="password" readonly>
+        <button onclick="copyPassword()">📋</button>
+    </div>
+
+    <div class="settings">
+        <label>Password Length</label>
+        <input type="range" min="6" max="30" value="12" id="length">
+        <div class="range-value" id="lengthValue">12</div>
+
+        <div class="setting">
+            <span>Uppercase</span>
+            <input type="checkbox" id="upper" checked>
+        </div>
+
+        <div class="setting">
+            <span>Lowercase</span>
+            <input type="checkbox" id="lower" checked>
+        </div>
+
+        <div class="setting">
+            <span>Numbers</span>
+            <input type="checkbox" id="number" checked>
+        </div>
+
+        <div class="setting">
+            <span>Symbols</span>
+            <input type="checkbox" id="symbol" checked>
+        </div>
+    </div>
+
+    <div class="strength">
+        <div class="bar">
+            <div class="fill" id="fill"></div>
+        </div>
+        <div class="strength-text" id="strengthText">
+            Password Strength
+        </div>
+    </div>
+
+    <button class="generate" onclick="generatePassword()">
+        Generate Password
+    </button>
+</div>
+
+<script>
+const lengthSlider = document.getElementById("length");
+const lengthValue = document.getElementById("lengthValue");
+
+lengthSlider.addEventListener("input",()=>{
+    lengthValue.innerText = lengthSlider.value;
+});
+
+function generatePassword(){
+
+    let chars = "";
+
+    if(document.getElementById("upper").checked)
+        chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    if(document.getElementById("lower").checked)
+        chars += "abcdefghijklmnopqrstuvwxyz";
+
+    if(document.getElementById("number").checked)
+        chars += "0123456789";
+
+    if(document.getElementById("symbol").checked)
+        chars += "!@#$%^&*()_+-={}[]<>?/";
+
+    if(chars === ""){
+        alert("Select at least one option");
+        return;
+    }
+
+    let password = "";
+    const length = parseInt(lengthSlider.value);
+
+    for(let i=0;i<length;i++){
+        password += chars.charAt(
+            Math.floor(Math.random()*chars.length)
+        );
+    }
+
+    document.getElementById("password").value = password;
+
+    checkStrength(password);
+}
+
+function checkStrength(password){
+
+    let strength = 0;
+
+    if(password.length >= 8) strength++;
+    if(password.length >= 12) strength++;
+    if(/[A-Z]/.test(password)) strength++;
+    if(/[0-9]/.test(password)) strength++;
+    if(/[^A-Za-z0-9]/.test(password)) strength++;
+
+    const fill = document.getElementById("fill");
+    const text = document.getElementById("strengthText");
+
+    if(strength <= 2){
+        fill.style.width = "33%";
+        fill.style.background = "#ef4444";
+        text.innerText = "Weak";
+    }
+    else if(strength <= 4){
+        fill.style.width = "66%";
+        fill.style.background = "#f59e0b";
+        text.innerText = "Medium";
+    }
+    else{
+        fill.style.width = "100%";
+        fill.style.background = "#22c55e";
+        text.innerText = "Strong";
+    }
+}
+
+function copyPassword(){
+    const password = document.getElementById("password");
+
+    if(password.value==="") return;
+
+    navigator.clipboard.writeText(password.value);
+    alert("Password copied successfully!");
+}
+
+generatePassword();
+</script>
+
+</body>
+</html>
